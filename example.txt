@@ -1,0 +1,3 @@
+fd: 3
+fd: 1
+This is printed in example.txt!
