@@ -356,15 +356,15 @@ int main(int ac, char **av, char **envp)
 		close(pipe1[1]);
 		return (0);
 	}
-
 	close(pipe1[0]);
 	close(pipe1[1]);
 	close(pipe2[0]);
 	close(pipe2[1]);
-	waitpid(pid3, NULL, 0);
-	waitpid(pid2, NULL, 0);
-	waitpid(pid1, NULL, 0);
 	printf("This is parent process\n");
+	waitpid(pid1, NULL, 0);
+	waitpid(pid2, NULL, 0);
+	waitpid(pid3, NULL, 0);
+	// wait(NULL);
 	close(fd1);
 	close(fd2);
 	return (0);
