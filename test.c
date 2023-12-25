@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include <fcntl.h>
+
 static int	is_sep(char c, char set)
 {
 	if (c == set)
@@ -80,32 +82,42 @@ char	**ft_split(char const *s, char set)
 	return (split_str);
 }
 
-// char	*ft_strjoin(char const *s1, char const *s2)
-// {
-// 	size_t	total_len;
-// 	char	*str;
-// 	int		i;
-// 	int		j;
+size_t	ft_strlen(const char *s)
+{
+	size_t	count;
 
-// 	if (s1 && !s2)
-// 		return ((char *)s1);
-// 	if (!s1 && s2)
-// 		return ((char *)s2);
-// 	if (!s1 && !s2)
-// 		return (NULL);
-// 	total_len = ft_strlen(s1) + ft_strlen(s2) + 1;
-// 	str = (char *)malloc(total_len * sizeof(char));
-// 	if (!str)
-// 		return (NULL);
-// 	i = -1;
-// 	j = -1;
-// 	while (s1[++i])
-// 		str[i] = s1[i];
-// 	while (s2[++j])
-// 		str[i++] = s2[j];
-// 	str[i] = '\0';
-// 	return (str);
-// }
+	count = 0;
+	while (s[count] != '\0')
+		count++;
+	return (count);
+}
+
+char	*ft_strjoin(char const *s1, char const *s2)
+{
+	size_t	total_len;
+	char	*str;
+	int		i;
+	int		j;
+
+	if (s1 && !s2)
+		return ((char *)s1);
+	if (!s1 && s2)
+		return ((char *)s2);
+	if (!s1 && !s2)
+		return (NULL);
+	total_len = ft_strlen(s1) + ft_strlen(s2) + 1;
+	str = (char *)malloc(total_len * sizeof(char));
+	if (!str)
+		return (NULL);
+	i = -1;
+	j = -1;
+	while (s1[++i])
+		str[i] = s1[i];
+	while (s2[++j])
+		str[i++] = s2[j];
+	str[i] = '\0';
+	return (str);
+}
 
 
 // int main()
@@ -233,21 +245,11 @@ char	**ft_split(char const *s, char set)
 
 int main(int ac, char **av, char **envp)
 {
-	char	*input;
-	char	*cmd1;
-	char	*cmd2;
-	char	*output;
 	int		i;
 	char	**cmdpath;
-	// int		fd[2];
+	int		fd[2];
+	(void)	ac;
 
-	if (ac == 5)
-	{
-		input = av[1];
-		cmd1 = av[2];
-		cmd2 = av[3];
-		output = av[4];
-	}
 	i = -1;
 	while (envp[++i])
 	{
@@ -257,12 +259,49 @@ int main(int ac, char **av, char **envp)
 			break ;
 		}
 	}
-	printf("%d\n", access("/usr/local/bin/sleep", X_OK));
-	printf("%d\n", access("/usr/bin/sleep", X_OK));
-	printf("%d\n", access("/bin/sleep", X_OK));
-	printf("%d\n", access("/usr/sbin/sleep", X_OK));
-	printf("%d\n", access("sbin/sleep", X_OK));
-	printf("%d\n", access("/usr/local/munki/sleep", X_OK));
+	int		fd1 = open(av[1], O_RDONLY);
+	char	**cmd1 = ft_split(av[2], ' ');
+	char	*cmd1_path = ft_strjoin("/", cmd1[0]);
 
+	i = -1;
+	if (cmdpath)
+	{
+		while (cmdpath[++i])
+		{
+			if (!(access(ft_strjoin(cmdpath[i], cmd1_path), X_OK)))
+			{
+				printf("%s\n", ft_strjoin(cmdpath[i], cmd1_path));
+				break ;
+			}
+		}
+	}
+
+	pipe(fd);
+	int pid = fork();
+
+	// if (pid != 0)
+	// 	wait(NULL);
+
+	if (pid == 0)
+	{
+		close(fd[0]);
+		printf("This is child process\n");
+		dup2(fd1, 0);
+		dup2(fd[1], 1);
+		execve(ft_strjoin(cmdpath[i], cmd1_path), cmd1, envp);
+		close(fd[1]);
+	}
+	else
+	{
+		char str[100];
+		close(fd[1]);
+		dup2(fd[0], 0);
+		read(0, str, sizeof(str));
+		close(fd[0]);
+		wait(NULL);
+		printf("This is parent process\n");
+		printf("%s\n", str);
+	}
+	
 	return (0);
 }
