@@ -246,10 +246,14 @@ char	*ft_strjoin(char const *s1, char const *s2)
 int main(int ac, char **av, char **envp)
 {
 	int		i;
+	int		j;
+	int		k;
 	char	**cmdpath;
-	int		fd[2];
+	int		pipe1[2];
+	int		pipe2[2];
 	(void)	ac;
 
+	cmdpath = NULL;
 	i = -1;
 	while (envp[++i])
 	{
@@ -260,8 +264,13 @@ int main(int ac, char **av, char **envp)
 		}
 	}
 	int		fd1 = open(av[1], O_RDONLY);
+	int		fd2 = open(av[5], O_WRONLY | O_CREAT | O_TRUNC, 0666);
 	char	**cmd1 = ft_split(av[2], ' ');
+	char	**cmd2 = ft_split(av[3], ' ');
+	char	**cmd3 = ft_split(av[4], ' ');
 	char	*cmd1_path = ft_strjoin("/", cmd1[0]);
+	char	*cmd2_path = ft_strjoin("/", cmd2[0]);
+	char	*cmd3_path = ft_strjoin("/", cmd3[0]);
 
 	i = -1;
 	if (cmdpath)
@@ -275,33 +284,80 @@ int main(int ac, char **av, char **envp)
 			}
 		}
 	}
+	j = -1;
+	if (cmdpath)
+	{
+		while (cmdpath[++j])
+		{
+			if (!(access(ft_strjoin(cmdpath[j], cmd2_path), X_OK)))
+			{
+				printf("%s\n", ft_strjoin(cmdpath[j], cmd2_path));
+				break ;
+			}
+		}
+	}
+	k = -1;
+	if (cmdpath)
+	{
+		while (cmdpath[++k])
+		{
+			if (!(access(ft_strjoin(cmdpath[k], cmd3_path), X_OK)))
+			{
+				printf("%s\n", ft_strjoin(cmdpath[k], cmd3_path));
+				break ;
+			}
+		}
+	}
 
-	pipe(fd);
-	int pid = fork();
+	pipe(pipe1);
+	pipe(pipe2);
+	int pid1 = fork();
+	int	pid2 = fork();
+	int	pid3 = fork();
 
 	// if (pid != 0)
 	// 	wait(NULL);
 
-	if (pid == 0)
+	if (pid1 == 0)
 	{
-		close(fd[0]);
-		printf("This is child process\n");
+		close(pipe1[0]);
+		printf("This is cmd1 process\n");
 		dup2(fd1, 0);
-		dup2(fd[1], 1);
+		dup2(pipe1[1], 1);
 		execve(ft_strjoin(cmdpath[i], cmd1_path), cmd1, envp);
-		close(fd[1]);
+		close(pipe1[1]);
+		close(pipe2[0]);
+		close(pipe2[1]);
 	}
-	else
+	if (pid2 == 0)
 	{
-		char str[100];
-		close(fd[1]);
-		dup2(fd[0], 0);
-		read(0, str, sizeof(str));
-		close(fd[0]);
-		wait(NULL);
-		printf("This is parent process\n");
-		printf("%s\n", str);
+		close(pipe1[1]);
+		close(pipe2[0]);
+		printf("This is cmd2 process\n");
+		dup2(pipe1[0], 0);
+		dup2(pipe2[1], 1);
+		execve(ft_strjoin(cmdpath[j], cmd2_path), cmd2, envp);
+		close(pipe1[0]);
+		close(pipe2[1]);
 	}
-	
+	if (pid3 == 0)
+	{
+		close(pipe2[1]);
+		printf("This is cmd3 process\n");
+		dup2(pipe2[0], 0);
+		dup2(fd2, 1);
+		execve(ft_strjoin(cmdpath[k], cmd3_path), cmd3, envp);
+		close(pipe2[0]);
+		close(pipe1[0]);
+		close(pipe1[1]);
+	}
+
+	close(pipe1[0]);
+	close(pipe1[1]);
+	close(pipe2[0]);
+	close(pipe2[1]);
+	waitpid(pid1, NULL, 0);
+	waitpid(pid2, NULL, 0);
+	waitpid(pid3, NULL, 0);
 	return (0);
 }
