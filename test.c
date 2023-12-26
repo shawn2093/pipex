@@ -311,67 +311,116 @@ int main(int ac, char **av, char **envp)
 
 	pipe(pipe1);
 	pipe(pipe2);
-	int pid1 = fork();
+	// int pid1 = fork();
+
+	// if (pid1 == 0)
+	// {
+	// 	close(pipe1[0]);
+	// 	printf("This is cmd1 process\n");
+	// 	dup2(fd1, 0);
+	// 	dup2(pipe1[1], 1);
+	// 	execve(ft_strjoin(cmdpath[i], cmd1_path), cmd1, envp);
+	// 	close(pipe1[1]);
+	// 	close(pipe2[0]);
+	// 	close(pipe2[1]);
+	// 	// return (0);
+	// }
+	// waitpid(pid1, NULL, 0);
+
+	// int	pid2 = fork();
 	
+	// if (pid2 == 0)
+	// {
+	// 	close(pipe1[1]);
+	// 	close(pipe2[0]);
+	// 	printf("This is cmd2 process\n");
+	// 	dup2(pipe1[0], 0);
+	// 	dup2(pipe2[1], 1);
+	// 	execve(ft_strjoin(cmdpath[j], cmd2_path), cmd2, envp);
+	// 	// close(pipe1[0]);
+	// 	// close(pipe2[1]);
+	// 	// return (0);
+	// }
 
-	// if (pid != 0)
-	// 	wait(NULL);
+	// waitpid(pid2, NULL, 0);
 
-	if (pid1 == 0)
-	{
-		close(pipe1[0]);
-		printf("This is cmd1 process\n");
-		dup2(fd1, 0);
-		dup2(pipe1[1], 1);
-		execve(ft_strjoin(cmdpath[i], cmd1_path), cmd1, envp);
-		close(pipe1[1]);
-		close(pipe2[0]);
-		close(pipe2[1]);
-		// return (0);
-	}
-	waitpid(pid1, NULL, 0);
-
-	int	pid2 = fork();
+	// int	pid3 = fork();
+	// if (pid3 == 0)
+	// {
+	// 	close(pipe2[1]);
+	// 	printf("This is cmd3 process\n");
+	// 	dup2(pipe2[0], 0);
+	// 	dup2(fd2, 1);
+	// 	execve(ft_strjoin(cmdpath[k], cmd3_path), cmd3, envp);
+	// 	close(pipe2[0]);
+	// 	close(pipe1[0]);
+	// 	close(pipe1[1]);
+	// 	// return (0);
+	// }
+	// waitpid(pid3, NULL, 0);
+	// close(pipe1[0]);
+	// close(pipe1[1]);
+	// close(pipe2[0]);
+	// close(pipe2[1]);
+	// printf("This is parent process\n");
+	// // waitpid(pid1, NULL, 0);
+	// // waitpid(pid2, NULL, 0);
 	
-	if (pid2 == 0)
-	{
-		close(pipe1[1]);
-		close(pipe2[0]);
-		printf("This is cmd2 process\n");
-		dup2(pipe1[0], 0);
-		dup2(pipe2[1], 1);
-		execve(ft_strjoin(cmdpath[j], cmd2_path), cmd2, envp);
-		// close(pipe1[0]);
-		// close(pipe2[1]);
-		// return (0);
-	}
+	// // wait(NULL);
+	// close(fd1);
+	// close(fd2);
 
-	waitpid(pid2, NULL, 0);
+	int x = 0;
 
-	int	pid3 = fork();
-	if (pid3 == 0)
+	while (x < 3)
 	{
-		close(pipe2[1]);
-		printf("This is cmd3 process\n");
-		dup2(pipe2[0], 0);
-		dup2(fd2, 1);
-		execve(ft_strjoin(cmdpath[k], cmd3_path), cmd3, envp);
-		close(pipe2[0]);
-		close(pipe1[0]);
-		close(pipe1[1]);
-		// return (0);
+		int pid = fork();
+		if (pid == 0)
+		{
+			if (x == 0)
+			{
+				close(pipe2[0]);
+				close(pipe2[1]);
+				close(pipe1[0]);
+				printf("This is cmd1 process\n");
+				dup2(fd1, 0);
+				dup2(pipe1[1], 1);
+				execve(ft_strjoin(cmdpath[i], cmd1_path), cmd1, envp);
+				return(0);
+			}
+			else if (x == 1)
+			{
+				close(pipe1[1]);
+				close(pipe2[0]);
+				printf("This is cmd2 process\n");
+				dup2(pipe1[0], 0);
+				dup2(pipe2[1], 1);
+				execve(ft_strjoin(cmdpath[j], cmd2_path), cmd2, envp);
+				return(0);
+			}
+			else if (x == 2)
+			{
+				close(pipe1[0]);
+				close(pipe1[1]);
+				close(pipe2[1]);
+				printf("This is cmd3 process\n");
+				dup2(pipe2[0], 0);
+				dup2(fd2, 1);
+				execve(ft_strjoin(cmdpath[k], cmd3_path), cmd3, envp);
+				return(0);
+			}
+		}
+		x++;
 	}
-	waitpid(pid3, NULL, 0);
 	close(pipe1[0]);
 	close(pipe1[1]);
-	close(pipe2[0]);
 	close(pipe2[1]);
-	printf("This is parent process\n");
-	// waitpid(pid1, NULL, 0);
-	// waitpid(pid2, NULL, 0);
-	
-	// wait(NULL);
-	close(fd1);
-	close(fd2);
+	close(pipe2[0]);
+	// x = 0;
+	// while (x < 2)
+	// {
+	// 	wait(NULL);
+	// 	x++;
+	// }
 	return (0);
 }
