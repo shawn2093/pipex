@@ -312,8 +312,7 @@ int main(int ac, char **av, char **envp)
 	pipe(pipe1);
 	pipe(pipe2);
 	int pid1 = fork();
-	int	pid2 = fork();
-	int	pid3 = fork();
+	
 
 	// if (pid != 0)
 	// 	wait(NULL);
@@ -328,9 +327,12 @@ int main(int ac, char **av, char **envp)
 		close(pipe1[1]);
 		close(pipe2[0]);
 		close(pipe2[1]);
-		return (0);
+		// return (0);
 	}
+	waitpid(pid1, NULL, 0);
 
+	int	pid2 = fork();
+	
 	if (pid2 == 0)
 	{
 		close(pipe1[1]);
@@ -339,11 +341,14 @@ int main(int ac, char **av, char **envp)
 		dup2(pipe1[0], 0);
 		dup2(pipe2[1], 1);
 		execve(ft_strjoin(cmdpath[j], cmd2_path), cmd2, envp);
-		close(pipe1[0]);
-		close(pipe2[1]);
-		return (0);
+		// close(pipe1[0]);
+		// close(pipe2[1]);
+		// return (0);
 	}
 
+	waitpid(pid2, NULL, 0);
+
+	int	pid3 = fork();
 	if (pid3 == 0)
 	{
 		close(pipe2[1]);
@@ -354,16 +359,17 @@ int main(int ac, char **av, char **envp)
 		close(pipe2[0]);
 		close(pipe1[0]);
 		close(pipe1[1]);
-		return (0);
+		// return (0);
 	}
+	waitpid(pid3, NULL, 0);
 	close(pipe1[0]);
 	close(pipe1[1]);
 	close(pipe2[0]);
 	close(pipe2[1]);
 	printf("This is parent process\n");
-	waitpid(pid1, NULL, 0);
-	waitpid(pid2, NULL, 0);
-	waitpid(pid3, NULL, 0);
+	// waitpid(pid1, NULL, 0);
+	// waitpid(pid2, NULL, 0);
+	
 	// wait(NULL);
 	close(fd1);
 	close(fd2);
