@@ -216,7 +216,7 @@ int	forkprocess(t_pipe **a, char **envp)
 		}
 		m++;
 	}
-	return (0);
+	return (pid);
 }
 
 void freencloseall(t_pipe **a)
@@ -227,28 +227,32 @@ void freencloseall(t_pipe **a)
 	i = -1;
 	while ((*a)->envp[++i])
 		free((*a)->envp[i]);
-	free((*a)->envp);
 	i = -1;
-	while ((*a)->cmd_dir[++i])
+	while (++i < (*a)->ac - 3)
 		free((*a)->cmd_dir[i]);
-	free((*a)->cmd_dir);
-	i = -1;
-	while ((*a)->cmd[++i])
+	while (--i >= 0)
 	{
 		j = -1;
 		while ((*a)->cmd[i][++j])
 			free((*a)->cmd[i][j]);
 		free((*a)->cmd[i]);
 	}
-	free((*a)->cmd);
-	i = -1;
 	while (++i < (*a)->ac - 4)
 	{
 		close((*a)->pipefd[i][0]);
 		close((*a)->pipefd[i][1]);
 		free((*a)->pipefd[i]);
 	}
+	freepipe(a);
+}
+
+void freepipe(t_pipe **a)
+{
+	free((*a)->envp);
+	free((*a)->cmd_dir);
+	free((*a)->cmd);
 	free((*a)->pipefd);
+	free(a);
 }
 
 void prepcmd(t_pipe **a, int ac, char **av)
@@ -283,7 +287,7 @@ void	initallvar(t_pipe **a, int ac, char **av, char **envp)
 	(*a)->fd1 = open(av[1], O_RDONLY);
 	if ((*a)->fd1 == -1)
 		failedexit("Input file error");
-	(*a)->fd2 = open(av[5], O_WRONLY | O_CREAT | O_TRUNC, 0666);
+	(*a)->fd2 = open(av[ac - 1], O_WRONLY | O_CREAT | O_TRUNC, 0666);
 	(*a)->cmd = (char ***)malloc(sizeof(char **) * (ac - 3));
 	if (!(*a)->cmd)
 		failedexit("Malloc for cmd failed\n");
@@ -295,35 +299,14 @@ void	initallvar(t_pipe **a, int ac, char **av, char **envp)
 
 int main(int ac, char **av, char **envp)
 {
-	// char	**cmdpath;
-	// int		**pipefd;
-	// int		fd1;
-	// int		fd2;
-	// char	***cmd;
-	// char	**cmd_str;
 	t_pipe	*a;
 
 	a = (t_pipe *) malloc(sizeof(t_pipe));
 	if (!a)
 		failedexit("Malloc for t_pipe failed.\n");
 	initallvar(&a, ac, av, envp);
-
-	// cmdpath = initenvp(envp);
-	// pipefd = initpipefd(ac);
-	// fd1 = open(av[1], O_RDONLY);
-	// if (fd1 == -1)
-	// 	failedexit("Input file error");
-	// fd2 = open(av[5], O_WRONLY | O_CREAT | O_TRUNC, 0666);
-	// cmd = (char ***)malloc(sizeof(char **) * (ac - 3));
-	// if (!cmd)
-	// 	failedexit("Malloc for cmd failed\n");
-	// cmd_str = (char **)malloc(sizeof(char *) * (ac - 3));
-	// if (!cmd_str)
-	// 	failedexit("Malloc for cmd_str failed\n");
-	// prepcmd(cmd, cmd_str, av, ac, cmdpath);
 	forkprocess(&a, envp);
 	wait(NULL);
 	freencloseall(&a);
-	free(a);
 	return (0);
 }
