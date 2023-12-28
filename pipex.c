@@ -1,10 +1,4 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <errno.h>
-#include <fcntl.h>
+#include "pipex.h"
 
 static int	is_sep(char c, char set)
 {
@@ -199,28 +193,25 @@ int		**initpipefd(int ac)
 	return (pipefd);
 }
 
-int	forkprocess(int ac, char **envp, int **pipefd, int fd1, int fd2, char **cmd_str, char ***cmd)
+int	forkprocess(t_pipe **a, char **envp)
 {
 	int	m;
 	int	pid;
 
 	m = 2;
-	while (m < ac - 1)
+	while (m < (*a)->ac - 1)
 	{
 		pid = fork();
 		if (pid == -1)
-		{
-			perror("Fork error\n");
-			exit(EXIT_FAILURE);
-		}
+			failedexit("Fork error.\n");
 		if (pid == 0)
 		{
-			closepipe(m, pipefd, ac);
+			closepipe(m, (*a)->pipefd, (*a)->ac);
 			if (m == 2)
-				dup2(fd1, 0);
-			else if (m == ac - 2)
-				dup2(fd2, 1);
-			execve(cmd_str[m - 2], cmd[m - 2], envp);
+				dup2((*a)->fd1, 0);
+			else if (m == (*a)->ac - 2)
+				dup2((*a)->fd2, 1);
+			execve((*a)->cmd_dir[m - 2], (*a)->cmd[m - 2], envp);
 			return(0);
 		}
 		m++;
@@ -228,39 +219,39 @@ int	forkprocess(int ac, char **envp, int **pipefd, int fd1, int fd2, char **cmd_
 	return (0);
 }
 
-void freencloseall(char **cmdpath, char	**cmd_str, char	***cmd, int **pipefd, int ac)
+void freencloseall(t_pipe **a)
 {
 	int	i;
 	int	j;
 
 	i = -1;
-	while (cmdpath[++i])
-		free(cmdpath[i]);
-	free(cmdpath);
+	while ((*a)->envp[++i])
+		free((*a)->envp[i]);
+	free((*a)->envp);
 	i = -1;
-	while (cmd_str[++i])
-		free(cmd_str[i]);
-	free(cmd_str);
+	while ((*a)->cmd_dir[++i])
+		free((*a)->cmd_dir[i]);
+	free((*a)->cmd_dir);
 	i = -1;
-	while (cmd[++i])
+	while ((*a)->cmd[++i])
 	{
 		j = -1;
-		while (cmd[i][++j])
-			free(cmd[i][j]);
-		free(cmd[i]);
+		while ((*a)->cmd[i][++j])
+			free((*a)->cmd[i][j]);
+		free((*a)->cmd[i]);
 	}
-	free(cmd);
+	free((*a)->cmd);
 	i = -1;
-	while (++i < ac - 4)
+	while (++i < (*a)->ac - 4)
 	{
-		close(pipefd[i][0]);
-		close(pipefd[i][1]);
-		free(pipefd[i]);
+		close((*a)->pipefd[i][0]);
+		close((*a)->pipefd[i][1]);
+		free((*a)->pipefd[i]);
 	}
-	free(pipefd);
+	free((*a)->pipefd);
 }
 
-void prepcmd(char ***cmd, char **cmd_str, char **av, int ac, char **cmdpath)
+void prepcmd(t_pipe **a, int ac, char **av)
 {
 	int		m;
 	int		i;
@@ -269,45 +260,70 @@ void prepcmd(char ***cmd, char **cmd_str, char **av, int ac, char **cmdpath)
 	m = 2;
 	while (m < ac - 1)
 	{
-		cmd[m - 2] = ft_split(av[m], ' ');
-		cmd_path = ft_strjoin("/", cmd[m - 2][0]);
+		(*a)->cmd[m - 2] = ft_split(av[m], ' ');
+		cmd_path = ft_strjoin("/", (*a)->cmd[m - 2][0]);
 		i = -1;
-		while (cmdpath[++i])
+		while ((*a)->envp[++i])
 		{
-			cmd_str[m - 2] = ft_strjoin(cmdpath[i], cmd_path);
-			if (!(access(cmd_str[m - 2], X_OK)))
+			(*a)->cmd_dir[m - 2] = ft_strjoin((*a)->envp[i], cmd_path);
+			if (!(access((*a)->cmd_dir[m - 2], X_OK)))
 				break ;
-			free(cmd_str[m - 2]);
+			free((*a)->cmd_dir[m - 2]);
 		}
 		free(cmd_path);
 		m++;
 	}
 }
 
+void	initallvar(t_pipe **a, int ac, char **av, char **envp)
+{
+	(*a)->ac = ac;
+	(*a)->envp = initenvp(envp);
+	(*a)->pipefd = initpipefd(ac);
+	(*a)->fd1 = open(av[1], O_RDONLY);
+	if ((*a)->fd1 == -1)
+		failedexit("Input file error");
+	(*a)->fd2 = open(av[5], O_WRONLY | O_CREAT | O_TRUNC, 0666);
+	(*a)->cmd = (char ***)malloc(sizeof(char **) * (ac - 3));
+	if (!(*a)->cmd)
+		failedexit("Malloc for cmd failed\n");
+	(*a)->cmd_dir = (char **)malloc(sizeof(char *) * (ac - 3));
+	if (!(*a)->cmd_dir)
+		failedexit("Malloc for cmd_str failed\n");
+	prepcmd(a, ac, av);
+}
+
 int main(int ac, char **av, char **envp)
 {
-	char	**cmdpath;
-	int		**pipefd;
-	int		fd1;
-	int		fd2;
-	char	***cmd;
-	char	**cmd_str;
+	// char	**cmdpath;
+	// int		**pipefd;
+	// int		fd1;
+	// int		fd2;
+	// char	***cmd;
+	// char	**cmd_str;
+	t_pipe	*a;
 
-	cmdpath = initenvp(envp);
-	pipefd = initpipefd(ac);
-	fd1 = open(av[1], O_RDONLY);
-	if (fd1 == -1)
-		failedexit("Input file error");
-	fd2 = open(av[5], O_WRONLY | O_CREAT | O_TRUNC, 0666);
-	cmd = (char ***)malloc(sizeof(char **) * (ac - 3));
-	if (!cmd)
-		failedexit("Malloc for cmd failed\n");
-	cmd_str = (char **)malloc(sizeof(char *) * (ac - 3));
-	if (!cmd_str)
-		failedexit("Malloc for cmd_str failed\n");
-	prepcmd(cmd, cmd_str, av, ac, cmdpath);
-	forkprocess(ac, envp, pipefd, fd1, fd2, cmd_str, cmd);
+	a = (t_pipe *) malloc(sizeof(t_pipe));
+	if (!a)
+		failedexit("Malloc for t_pipe failed.\n");
+	initallvar(&a, ac, av, envp);
+
+	// cmdpath = initenvp(envp);
+	// pipefd = initpipefd(ac);
+	// fd1 = open(av[1], O_RDONLY);
+	// if (fd1 == -1)
+	// 	failedexit("Input file error");
+	// fd2 = open(av[5], O_WRONLY | O_CREAT | O_TRUNC, 0666);
+	// cmd = (char ***)malloc(sizeof(char **) * (ac - 3));
+	// if (!cmd)
+	// 	failedexit("Malloc for cmd failed\n");
+	// cmd_str = (char **)malloc(sizeof(char *) * (ac - 3));
+	// if (!cmd_str)
+	// 	failedexit("Malloc for cmd_str failed\n");
+	// prepcmd(cmd, cmd_str, av, ac, cmdpath);
+	forkprocess(&a, envp);
 	wait(NULL);
-	freencloseall(cmdpath, cmd_str, cmd, pipefd, ac);
+	freencloseall(&a);
+	free(a);
 	return (0);
 }

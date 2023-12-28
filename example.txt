@@ -1,5 +1,4 @@
 fd: 3
 fd: 1
 fd: 2
-fd: 4
 This is printed in example.txt!

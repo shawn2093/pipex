@@ -8,3 +8,15 @@
 # include <sys/wait.h>
 # include <errno.h>
 # include <fcntl.h>
+
+typedef struct s_pipe {
+    int     ac;
+    char    **envp;
+    int     **pipefd;
+    int     fd1;
+    int     fd2;
+    char    ***cmd;
+    char    **cmd_dir;
+}   t_pipe;
+
+#endif
