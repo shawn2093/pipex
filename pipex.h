@@ -8,6 +8,7 @@
 # include <sys/wait.h>
 # include <errno.h>
 # include <fcntl.h>
+# include "get_next_line.h"
 
 typedef struct s_pipe {
     int     ac;
@@ -17,6 +18,9 @@ typedef struct s_pipe {
     int     fd2;
     char    ***cmd;
     char    **cmd_dir;
+    int     heredoc;
+    int     fd[2];
+    char    *input;
 }   t_pipe;
 
 #endif
