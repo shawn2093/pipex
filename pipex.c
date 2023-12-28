@@ -188,10 +188,10 @@ void    closepipe(int index, t_pipe **a)
             dupnclosewritepipe(index, a, i);
         }
     }
-	if ((*a)->heredoc)
-		close((*a)->fd[0]);
-	if ((*a)->heredoc)
-		close((*a)->fd[1]);
+	// if ((*a)->heredoc)
+	// 	close((*a)->fd[0]);
+	// if ((*a)->heredoc)
+	// 	close((*a)->fd[1]);
 }
 
 char	**initenvp(char **envp)
@@ -247,12 +247,12 @@ int	heredocprocess(t_pipe **a)
 		close((*a)->pipefd[i][1]);
 	}
 	close((*a)->fd[0]);
-	dup2((*a)->fd[1], 1);
+	dup2((*a)->fd1, 1);
 	printf("%s", (*a)->input);
 	return (0);
 }
 
-int	forkprocess(t_pipe **a, char **envp)
+int	forkprocess(t_pipe **a, char **envp, char **av)
 {
 	int	m;
 	int	pid;
@@ -268,6 +268,10 @@ int	forkprocess(t_pipe **a, char **envp)
 			if (m == 2 && (*a)->heredoc == 1)
 				return (heredocprocess(a));
 			closepipe(m, a);
+			if (m == 3 && (*a)->heredoc == 1)
+				(*a)->fd1 = open("sample.txt", O_RDONLY);
+			if (m == (*a)->ac - 2 && (*a)->heredoc == 1)
+				(*a)->fd2 = open(av[(*a)->ac - 1], O_WRONLY | O_CREAT | O_APPEND, 0666);
 			if (m == 2 + (*a)->heredoc)
 				dup2((*a)->fd1, 0);
 			else if (m == (*a)->ac - 2)
@@ -352,7 +356,7 @@ void	initallvar(t_pipe **a, int ac, char **av, char **envp)
 	(*a)->envp = initenvp(envp);
 	initpipefd(a);
 	if ((*a)->heredoc)
-		(*a)->fd1 = (*a)->fd[1];
+		(*a)->fd1 = open("sample.txt", O_WRONLY | O_CREAT | O_TRUNC, 0666);
 	else
 		(*a)->fd1 = open(av[1], O_RDONLY);
 	if ((*a)->fd1 == -1)
@@ -405,7 +409,7 @@ int main(int ac, char **av, char **envp)
 	initallvar(&a, ac, av, envp);
 	if (a->heredoc)
 		initinput(&a, av);
-	forkprocess(&a, envp);
+	forkprocess(&a, envp, av);
 	wait(NULL);
 	freencloseall(&a);
 	free(a);
