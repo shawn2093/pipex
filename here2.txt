@@ -1,0 +1,25 @@
+a.out
+bonus.txt
+closepipe.c
+example.txt
+get_next_line.c
+get_next_line.h
+get_next_line_utils.c
+here.txt
+here1.txt
+here2.txt
+learn.c
+pipex.c
+pipex.h
+result.txt
+result1.txt
+result2.txt
+result3.txt
+sample.txt
+hjsbdhj
+	kjhjsd
+hd
+hi
+hi
+hi
+hi

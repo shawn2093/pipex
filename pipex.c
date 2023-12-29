@@ -151,7 +151,7 @@ char	*ft_strjoin(char const *s1, char const *s2)
 
 void    dupnclosereadpipe(int index, t_pipe **a, int i)
 {
-    if (i != index - 3)
+    if (i != index - 3 - (*a)->heredoc)
         close((*a)->pipefd[i][0]);
     else
         dup2((*a)->pipefd[i][0], 0);
@@ -256,6 +256,7 @@ int	forkprocess(t_pipe **a, char **envp, char **av)
 {
 	int	m;
 	int	pid;
+	(void) av;
 
 	m = 2;
 	while (m < (*a)->ac - 1)
@@ -270,8 +271,8 @@ int	forkprocess(t_pipe **a, char **envp, char **av)
 			closepipe(m, a);
 			if (m == 3 && (*a)->heredoc == 1)
 				(*a)->fd1 = open("sample.txt", O_RDONLY);
-			if (m == (*a)->ac - 2 && (*a)->heredoc == 1)
-				(*a)->fd2 = open(av[(*a)->ac - 1], O_WRONLY | O_CREAT | O_APPEND, 0666);
+			// if (m == (*a)->ac - 2 && (*a)->heredoc == 1)
+			// 	(*a)->fd2 = open(av[(*a)->ac - 1], O_WRONLY | O_CREAT | O_APPEND, 0666);
 			if (m == 2 + (*a)->heredoc)
 				dup2((*a)->fd1, 0);
 			else if (m == (*a)->ac - 2)
@@ -385,7 +386,7 @@ void	initinput(t_pipe **a, char **av)
 	str = get_next_line(0);
 	limiter = ft_strjoin(av[2], "\n");
 	buffer = ft_strdup("");
-	while (ft_strcmp(str, limiter))
+	while (ft_strcmp(str, limiter) && str)
 	{
 		tmp = ft_strjoin(buffer, str);
 		free(str);
@@ -396,6 +397,7 @@ void	initinput(t_pipe **a, char **av)
 		str = get_next_line(0);
 	}
 	free(str);
+	free(limiter);
 	(*a)->input = buffer;
 }
 
