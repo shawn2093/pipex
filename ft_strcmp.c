@@ -1,32 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pipex.c                                            :+:      :+:    :+:   */
+/*   ft_strcmp.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: long <long@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/12/29 23:28:10 by long              #+#    #+#             */
-/*   Updated: 2023/12/30 06:49:00 by long             ###   ########.fr       */
+/*   Created: 2023/12/29 22:27:27 by long              #+#    #+#             */
+/*   Updated: 2023/12/29 22:27:31 by long             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-int	main(int ac, char **av, char **envp)
+int	ft_strcmp(char *s1, char *s2)
 {
-	t_pipe	*a;
+	int	count;
 
-	if (ac == 1)
-		failedexit("No paramters provided error\n");
-	a = (t_pipe *) malloc(sizeof(t_pipe));
-	if (!a)
-		failedexit("Malloc for t_pipe failed.\n");
-	initallvar(&a, ac, av, envp);
-	if (a->heredoc)
-		initheredoc(&a, av);
-	forkprocess(&a, envp);
-	wait(NULL);
-	freencloseall(&a);
-	free(a);
-	return (0);
+	count = 0;
+	while (s1[count] != '\0' && s2[count] != '\0')
+	{
+		if (s1[count] == s2[count])
+			count++;
+		else
+			return (s1[count] - s2[count]);
+	}
+	return (s1[count] - s2[count]);
 }

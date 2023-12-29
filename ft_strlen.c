@@ -1,32 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pipex.c                                            :+:      :+:    :+:   */
+/*   ft_strlen.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: long <long@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/12/29 23:28:10 by long              #+#    #+#             */
-/*   Updated: 2023/12/30 06:49:00 by long             ###   ########.fr       */
+/*   Created: 2023/12/29 22:26:27 by long              #+#    #+#             */
+/*   Updated: 2023/12/29 22:26:33 by long             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-int	main(int ac, char **av, char **envp)
+size_t	ft_strlen(const char *s)
 {
-	t_pipe	*a;
+	size_t	count;
 
-	if (ac == 1)
-		failedexit("No paramters provided error\n");
-	a = (t_pipe *) malloc(sizeof(t_pipe));
-	if (!a)
-		failedexit("Malloc for t_pipe failed.\n");
-	initallvar(&a, ac, av, envp);
-	if (a->heredoc)
-		initheredoc(&a, av);
-	forkprocess(&a, envp);
-	wait(NULL);
-	freencloseall(&a);
-	free(a);
-	return (0);
+	count = 0;
+	while (s[count] != '\0')
+		count++;
+	return (count);
 }

@@ -1,32 +1,34 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pipex.c                                            :+:      :+:    :+:   */
+/*   ft_strdup.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: long <long@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/12/29 23:28:10 by long              #+#    #+#             */
-/*   Updated: 2023/12/30 06:49:00 by long             ###   ########.fr       */
+/*   Created: 2023/12/29 22:24:49 by long              #+#    #+#             */
+/*   Updated: 2023/12/29 23:49:47 by long             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-int	main(int ac, char **av, char **envp)
+char	*ft_strdup(const char *s1)
 {
-	t_pipe	*a;
+	int		i;
+	int		j;
+	char	*t;
 
-	if (ac == 1)
-		failedexit("No paramters provided error\n");
-	a = (t_pipe *) malloc(sizeof(t_pipe));
-	if (!a)
-		failedexit("Malloc for t_pipe failed.\n");
-	initallvar(&a, ac, av, envp);
-	if (a->heredoc)
-		initheredoc(&a, av);
-	forkprocess(&a, envp);
-	wait(NULL);
-	freencloseall(&a);
-	free(a);
-	return (0);
+	i = 0;
+	j = -1;
+	while (s1[i])
+		i++;
+	t = malloc((i + 1) * sizeof(char));
+	if (!t)
+		return (0);
+	while (s1[++j])
+	{
+		t[j] = s1[j];
+	}
+	t[j] = '\0';
+	return (t);
 }
