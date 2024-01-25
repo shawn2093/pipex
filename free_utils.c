@@ -6,7 +6,7 @@
 /*   By: long <long@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 23:27:49 by long              #+#    #+#             */
-/*   Updated: 2023/12/30 06:33:28 by long             ###   ########.fr       */
+/*   Updated: 2024/01/26 02:43:55 by long             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ void	initheredoc(t_pipe **a, char **av)
 	char	*buffer;
 	char	*tmp;
 
-	write(1, "pipe heredoc> ", 14);
+	write(1, "heredoc> ", 9);
 	str = get_next_line(0);
 	limiter = ft_strjoin(av[2], "\n");
 	buffer = ft_strdup("");
@@ -30,7 +30,7 @@ void	initheredoc(t_pipe **a, char **av)
 		free(buffer);
 		buffer = ft_strdup(tmp);
 		free(tmp);
-		write(1, "pipe heredoc> ", 14);
+		write(1, "heredoc> ", 9);
 		str = get_next_line(0);
 	}
 	free(str);
